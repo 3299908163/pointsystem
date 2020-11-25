@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户信息</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css" media="all">
+</head>
+<body>
+
+<form class="layui-form" >
+    <div class="layui-form-item">
+        <div class="layui-input-inline">
+            <input type="text" name="title" required  lay-verify="required" placeholder="请输入商品名称" autocomplete="off" class="layui-input prizeName" style="width: 200px">
+        </div>
+        <input type="button" class="layui-btn" value="搜索" onclick="clickPrizeName();"/>
+    </div>
+    <input type="button" class="layui-btn" id="addPrize" value="新增商品" onclick=""/>
+</form>
+
+<div id="lalla" class="layui-col-md6 layui-col-md-offset3">
+    <img src="">
+</div>
+
+<div>
+    <table class="layui-table" lay-size=""  style="clear: both;" id="demo"  lay-filter="test" >
+    </table>
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs upd" id="upd"  lay-filter="testId" lay-event="edit">编辑</a>
+    <!--<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">下架</a>-->
+</script>
+
+<script src="/layui/layui.all.js"></script>
+<script src="/js/const/jquery-3.3.1.js"></script>
+<script src="/js/const/jquery.form.js"></script>
+<script>
+    loadData();
+    var prizeName;
+    function clickPrizeName(){
+        prizeName=$(".prizeName").val();
+        loadData();
+    }
+    function loadData(){
+        layui.use('table', function(){
+            var table = layui.table;
+            //第一个实例
+            table.render({
+                elem: '#demo'
+                ,height: 'full'
+                ,url: '/sys/page/getPrizePage' //数据接口
+                ,page: true //开启分页
+                ,cols: [[ //表头
+                    {field: 'id', title: 'ID',  sort: true, fixed: 'left'}
+                    ,{field: 'name', title: '商品名'}
+                    ,{field: 'point', title: '商品积分',  sort: true}
+                    ,{field: 'number', title: '商品数量' }
+                    ,{field: 'img', title: '图片', templet: '<div><img style="width: 100px;" src="{{d.imgUrl}}"/></div>'}
+                    ,{ title:'操作', toolbar: '#barDemo'}
+                ]]
+                ,where: {
+                    // //.渲染请求参数(查询条件等)
+                    name:prizeName
+                }
+            });
+            table.on('tool(test)', function(obj){
+                var data2 = obj.data;
+
+                //console.log(obj)
+                if(obj.event === "edit"){
+                    $.getJSON("/sys/prize/getPrizeById?prizeId=" + data2.id, function (data1) {
+                        //信息
+                        // alert(data1["Data"].id)
+                            layer.open({
+                                type: 1,
+                                skin: 'layui-layer-rim', //加上边框
+                                area: ['450px', '500px'], //宽高
+                                title: '编辑',
+                                content: '<form class="layui-form form" style="margin-left: 50px" id="upprize" enctype="multipart/form-data" method="post"  action="/sys/prize/updatePrize/"> ' +
+                                    ' <div class="layui-form-item">\n' +
+                                    '    <label class="layui-form-label">商品名</label>\n' +
+                                    '    <div class="" style="display: inline-block;">\n' +
+                                    '      <input type="text" name="name" value="'+data1["Data"].name+'"placeholder="请输入商品名" required lay-verify="required"  class="layui-input">\n' +
+                                    ' <input type="hidden"  name="id"  value="'+data1["Data"].id+'"  >\n' +
+                                    ' <input type="hidden"  name="img"  value="'+data1["Data"].imgUrl+'"  >\n' +
+                                    '    </div>\n' +
+                                    '    <div class="layui-form-item" style="padding-top: 15px;">\n' +
+                                    '    <label class="layui-form-label" style=" margin:0px -25px 0px 25px;; float: left; text-align: center;">所需积分</label>\n' +
+                                    '<div>\n' +
+                                    '      <input style="padding-left:5px;  display: inline-block;width: 180px;" type="number" name="point" id="point" value="'+data1["Data"].point+'" placeholder="兑换所需积分" required lay-verify="required"  class="layui-input">\n' +
+                                    '</div>\n'+
+                                    '    </div>\n' +
+                                    '    <div class="layui-form-item" style="padding-top: 15px;">\n' +
+                                    '    <label class="layui-form-label" style=" margin:0px -25px 0px 25px;; float: left; text-align: center;">奖品数量</label>\n' +
+                                        '<div>\n'+
+                                    '      <input style="width: 180px; display: inline-block; " type="number" name="number" id="number" value="'+data1["Data"].number+'"  placeholder="请输入奖品数量" required lay-verify="required"  class="layui-input">\n' +
+                                        '</div>\n'+
+                                    '    </div>\n' +
+                                        '<div class="layui-form-item" style="padding-top: 15px;">\n'+
+                                    '    <label class="layui-form-label" style="float: left; margin:0px -10px 0px 15px;">奖品配图</label>\n' +
+                                    '    <img  style="width: 50px;height: 50px" class="layui-upload-img" id="demo1" src="'+data1["Data"].imgUrl+'">'+
+                                    '   </div>\n'+
+                                    '    <div class="layui-input-inline" style="text-align: center; padding-top: 15px;">\n' +
+                                    '<input style="padding-left: 50px;" type="file" name="file" id="imgurl" accept="image/*">\n'+
+                                    '<div class="layui-upload-list">\n'+
+                                    '<img name="small_img" id="small_img" width="50px" height="50px">\n'+
+                                    '<p id="demoText"></p>\n'+
+                                    '</div>\n'+
+                                    '</div>\n' +
+                                    ' <div class="layui-input-inline" style="padding-top: 50px"><input type="submit" value="修改" class="layui-btn layui-btn-primary" style="margin: 50px" id="submit"></div> </div>' +
+                                    '</form>\n',
+                                success: function(layero, index){
+                                    $("#upprize").ajaxForm(function (data) {
+                                        alert(data["msg"]);
+                                        // window.location.href = document.referrer
+                                        layer.close(layer.index);
+                                        loadData();
+                                    });
+                                }
+                            });
+                        function getObjectURL(file) {
+                            var url = null ;
+                            if (window.createObjectURL!=undefined) { // basic
+                                url = window.createObjectURL(file) ;
+                            } else if (window.URL!=undefined) { // mozilla(firefox)
+                                url = window.URL.createObjectURL(file) ;
+                            } else if (window.webkitURL!=undefined) { // webkit or chrome
+                                url = window.webkitURL.createObjectURL(file) ;
+                            }
+                            return url ;
+                        }
+                        $("#imgurl").change(function() {
+                            var objUrl = getObjectURL(this.files[0]);
+                            console.log("objUrl = " + objUrl);
+                            if (objUrl) {
+                                $("#small_img").attr("src", objUrl);
+                                $("#small_img").show();
+                            }
+                        });
+
+
+                    })
+                } else{
+                  alert("异常")
+                }
+            });
+
+        });
+    }
+
+    $("#addPrize").click(function () {
+            var open=layer.open({
+                type: 2,
+                skin: 'layui-layer-rim', //加上边框
+                area: ['420px', '400px'], //宽高
+
+                content:'/sys/prize/in'
+            });
+            $("#test9").click(function () {
+                layer.close(open);
+            })
+    });
+</script>
+</body>
+</html>

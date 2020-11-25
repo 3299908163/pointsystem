@@ -1,0 +1,46 @@
+ul{
+    list-style: none;
+}
+#app{
+    padding: 1rem;
+}
+.title{
+    margin: 1rem 0;
+}
+.student .stuButtons{
+    line-height: 3rem;
+}
+.grade>p{
+    line-height: 3rem;
+}
+.title span{
+    font-size: 1rem;
+    font-weight: normal;
+    float: right;
+    padding-right: 3rem;
+}
+a{
+    color: #555;
+}
+a:hover{
+    color: darkgreen;
+}
+.logo{
+    position: relative;
+    line-height: 8rem;
+    height: 8rem;
+}
+.logo img{
+    position: absolute;
+    left: 2rem;
+    height: 8rem;
+}
+.logo h2{
+    line-height: 8rem;
+}
+.message{
+    text-align: center;
+    font-size: 2rem;
+    line-height: 4rem;
+
+}

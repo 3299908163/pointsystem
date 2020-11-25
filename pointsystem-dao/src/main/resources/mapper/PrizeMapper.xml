@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bdqn.pointsystem.dao.PrizeMapper">
+    <select id="selectPrize" resultType="cn.bdqn.pointsystem.emtitys.Prize">
+        select * from prize
+    </select>
+
+    <select id="selectPagePrize" resultType="cn.bdqn.pointsystem.emtitys.Prize">
+        select * from prize
+        <where>
+            <if test="name!=null and ''!=name">
+                and name like concat('%',#{name},'%')
+            </if>
+
+        </where>
+        ORDER BY id  DESC
+    </select>
+
+    <select id="prizeCount" resultType="int">
+            select count(1) from  prize
+        <where>
+            <if test="name!=null and ''!=name">
+                and name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertPrize">
+        INSERT prize (`name`,point,img_url,`number`)VALUES(#{name},#{point},#{imgUrl},#{number})
+    </insert>
+    <update id="updatePrize">
+        UPDATE prize SET `name`=#{name},point=#{point},img_url=#{imgUrl},`number`=#{number} WHERE id=#{id}
+    </update>
+    <select id="selectPrizeOne" resultType="cn.bdqn.pointsystem.emtitys.Prize">
+         select * from prize where id=#{id}
+    </select>
+    <select id="updatePrizeCount">
+         UPDATE prize SET `number`=#{number} WHERE id=#{id}
+    </select>
+    <update id="updatePrizeNumber">
+        update prize set number =number-1 where id=#{id}
+    </update>
+    <select id="selectPrizeOneName"  parameterType="java.lang.String"  resultType="int" >
+         select count(1) from prize where `name`=#{name}
+    </select>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bdqn.pointsystem.dao.GradeMapper">
+    <select id="getGradeList" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        select * from grade
+    </select>
+
+    <select id="selectPageGrade" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        select * from grade
+        <where>
+            <if test="name!=null and '' != name">
+                and name = #{name}
+            </if>
+
+        </where>
+        ORDER BY id  DESC
+    </select>
+
+    <select id="getGradeById" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        select * from grade where id=#{id}
+    </select>
+
+    <select id="getGradesOrderByPoint" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        SELECT * FROM grade ORDER BY POINT DESC
+    </select>
+
+    <select id="selectGradeCount" resultType="int">
+        select count(1) from grade;
+    </select>
+
+    <select id="getGradeName" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        select * from grade;
+    </select>
+
+    <insert id="addGrade" >
+        insert into grade(name) values(#{name})
+    </insert>
+
+    <update id="updateGradePoint" >
+        UPDATE grade SET point=#{point} WHERE id=#{gradeId}
+    </update>
+
+    <select id="getGradesByGradeName" resultType="cn.bdqn.pointsystem.emtitys.Grade">
+        select * from grade where name=#{gradeName}
+    </select>
+
+    <delete id="delGrade" parameterType="int">
+        delete from grade where id=#{id}
+    </delete>
+</mapper>

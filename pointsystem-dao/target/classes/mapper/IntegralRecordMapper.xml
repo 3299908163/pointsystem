@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bdqn.pointsystem.dao.IntegralRecordMapper">
+    <resultMap id="IntegralRecordResult" type="cn.bdqn.pointsystem.emtitys.IntegralRecord">
+        <id property="id" column="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="grade_id" property="gradeId"/>
+        <result column="point" property="point"/>
+        <result column="is_add" property="isAdd"/>
+        <result column="cause_id" property="causeId"/>
+        <result column="recorder_id" property="recorderId"/>
+        <result column="creation_time" property="creationTime"/>
+        <result column="recorderName" property="recorderName"/>
+        <result column="integralRecordGradeId" property="integralRecordGradeId"/>
+        <result column="integralRecordGradeName" property="integralRecordGradeName"/>
+        <association property="grade" javaType="cn.bdqn.pointsystem.emtitys.Grade">
+            <id column="id" property="id"/>
+            <result column="gradeName" property="name"/>
+            <result column="point" property="point"/>
+        </association>
+        <association property="user" javaType="cn.bdqn.pointsystem.emtitys.User">
+            <id column="id" property="id"/>
+            <result column="userName" property="name"/>
+        </association>
+        <association property="cause" javaType="cn.bdqn.pointsystem.emtitys.Cause">
+            <id column="id" property="id"/>
+            <result column="cause" property="cause"/>
+        </association>
+    </resultMap>
+
+    <select id="selectIntegralRecordStudentPage" resultMap="IntegralRecordResult">
+
+        SELECT i.*,u.`name` as userName,g.`id` AS integralRecordGradeId,c.`cause`,g.id,
+        (SELECT NAME FROM grade WHERE grade.`id`=u.`grade_id`) AS gradeName,
+        (SELECT NAME FROM USER WHERE user.`id`=i.`recorder_id`) AS recorderName
+        FROM integral_record i
+        LEFT JOIN USER u ON u.`id`=i.`user_id`
+        LEFT JOIN grade g ON g.`id`=u.`grade_id`
+        INNER JOIN cause c ON c.`id`=i.`cause_id`
+        <where>
+            <if test="userName!=null and ''!= userName">
+                and u.name like concat('%',#{userName},'%')
+            </if>
+            <if test="integralRecord.integralRecordGradeId!=null and integralRecord.integralRecordGradeId>0">
+                and g.id=#{integralRecord.integralRecordGradeId}
+            </if>
+            and i.grade_id IS NULL AND i.user_Id IS NOT NULL order by i.id desc
+        </where>
+    </select>
+
+    <select id="selectIntegralRecordGradePage" resultMap="IntegralRecordResult">
+        SELECT i.*,g.`name` as gradeName,c.`cause`,
+        (SELECT NAME FROM USER WHERE user.`id`=i.`recorder_id`) AS recorderName
+        FROM integral_record i
+        INNER JOIN grade g ON g.`id`=i.`grade_id`
+        LEFT JOIN cause c ON c.`id`=i.`cause_id`
+        <where>
+            <if test="integralRecord.integralRecordGradeId!=null and integralRecord.integralRecordGradeId>0">
+                and g.id=#{integralRecord.integralRecordGradeId}
+            </if>
+            <if test="integralRecord.integralRecordGradeName !=null and ''!= integralRecord.integralRecordGradeName ">
+                and g.name  like concat('%',#{integralRecord.integralRecordGradeName},'%')
+            </if>
+            and i.user_id IS NULL AND i.grade_id IS NOT NULL order by i.id desc
+        </where>
+    </select>
+
+
+    <select id="selectIntegralRecordStudentPageCount" resultType="int">
+        SELECT COUNT(1)
+        FROM integral_record  i
+        LEFT JOIN USER u ON u.`id`=i.`user_id`
+        LEFT JOIN grade g ON g.`id`=u.`grade_id`
+        INNER JOIN cause c ON c.`id`=i.`cause_id`
+        <where>
+            <if test="userName!=null and ''!= userName">
+                and u.name like concat('%',#{userName},'%')
+            </if>
+            <if test="integralRecord.integralRecordGradeId!=null and integralRecord.integralRecordGradeId>0">
+                and g.id=#{integralRecord.integralRecordGradeId}
+            </if>
+            and i.grade_id IS NULL AND i.user_Id IS NOT NULL
+        </where>
+    </select>
+
+    <select id="selectIntegralRecordGradePageCount" resultType="int">
+        SELECT count(1)
+        FROM integral_record i
+        INNER JOIN grade g ON g.`id`=i.`grade_id`
+        LEFT JOIN cause c ON c.`id`=i.`cause_id`
+        <where>
+            <if test="integralRecord.integralRecordGradeId!=null and integralRecord.integralRecordGradeId>0">
+                and g.id=#{integralRecord.integralRecordGradeId}
+            </if>
+            <if test="integralRecord.integralRecordGradeName !=null and ''!= integralRecord.integralRecordGradeName ">
+                and g.name  like concat('%',#{integralRecord.integralRecordGradeName},'%')
+            </if>
+            and i.user_id IS NULL AND i.grade_id IS NOT NULL
+        </where>
+    </select>
+
+
+    <insert id="addGradeIntegralRecord">
+        INSERT INTO integral_record(grade_id,POINT,is_add,cause_id,recorder_id,creation_time) VALUES(#{gradeId},#{point},#{isAdd},#{causeId},#{recorderId},#{creationTime})
+    </insert>
+    <insert id="addUserIntegralRecord">
+        INSERT INTO integral_record(user_id,POINT,is_add,cause_id,recorder_id,creation_time) VALUES(#{userId},#{point},#{isAdd},#{causeId},#{recorderId},#{creationTime})
+    </insert>
+
+</mapper>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户信息</title>
+    <!--<script src="/js/const/user.js"></script>-->
+    <script src="/js/const/jquery-3.3.1.js"></script>
+    <script src="/layui/layui.all.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+</head>
+
+<form class="layui-form" >
+    <div class="layui-form-item">
+
+        <input type="button" class="layui-btn" value="搜索" onclick="loadData();"/>
+
+        <button type="button" class="layui-btn" id="test3"><i class="layui-icon"></i>选择文件添加多个学员（仅支持xlsx/xls文件）</button>
+
+        <div class="layui-input-inline">
+            <input type="text" name="title" required  lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-input userName" style="width: 200px">
+        </div>
+        <label class="layui-form-label">选择班级</label>
+        <div class="layui-input-inline">
+            <select id="gradeInfo"  lay-filter="gradeId" >
+                <option value="0" selected="selected">请选择</option>
+                <#list gradeList as grade>
+                <option value="${grade.id}">${grade.name}</option>
+            </#list>
+            </select>
+        </div>
+    </div>
+</form>
+
+
+<table id="demo" lay-filter="test">
+
+</table>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container" id="layerDemo">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">修改信息</button>
+        <button class="layui-btn layui-btn-sm" data-type="getCheckLength" lay-event="getCheckLength">删除信息（点击复选框进行删除）</button>
+    </div>
+</script>
+<script>
+    // layui.use(['form'], function () {
+    //     var form = layui.form;
+    //     form.on('select(isAdmin)', function(data){
+    //         if(data.value>-1){
+    //             isAdmin=data.value;
+    //             loadData();
+    //         }  if(data.value==-1) {
+    //             isAdmin=null;
+    //             loadData();
+    //         }
+    //     });
+    // });
+    layui.use('upload', function(){
+        var $ = layui.jquery,upload = layui.upload;
+        upload.render({
+            elem: '#test3'
+            ,url: '/sys/import'
+            ,method: 'post'
+            ,exts:'xls|xlsx'
+            ,accept: 'file' //普通文件
+            ,done: function(res){
+                layer.msg("添加成功！");
+                loadData();
+            }
+            ,error: function(res){
+                alert(res)
+            }
+        })
+    })
+
+    $(function () {
+        loadData();
+    })
+    function loadData(){
+        var userName=$(".userName").val();
+        var gradeId=$("#gradeInfo").val();
+        layui.use('table',function(){
+            var table = layui.table;
+            //第一个实例
+            table.render({
+                elem: '#demo'
+                ,height: 'full'
+                ,url: '/sys/page/userList?gradeId='+gradeId+"&name="+userName //数据接口
+               //    ,edit: 'text'
+                ,page: {     //支持传入layuipage组件的所有参数
+                    layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']//自定义分页布局
+                    , limits: [5, 10, 15]
+                    , first: false //不显示首页
+                    , last: false //不显示尾页
+                }
+                ,toolbar:"#toolbarDemo"
+                ,cols: [[ //表头
+                    {type:'radio',fixed: 'left'}
+                    ,{field: 'id', title: 'ID',  sort: true}
+                    ,{field: 'name', title: '学生名'}
+                    ,{field: 'identity', title: '身份证',  sort: true}
+                    ,{field: 'address', title: '地址'}
+                    ,{field: 'point', title: '积分'}
+                    ,{field: 'gradeName', title: '年级名',  templet: '<div>{{d.grade.name}}</div>'}
+                    ,{field: 'sex', title: '性别'}
+                    ,{field: 'phone', title: '手机号'}
+                    ,{field: 'parentPhone', title: '父母手机号'}
+                ]]
+                /*,where: {
+                    // //.渲染请求参数(查询条件等)
+                    gradeId: gradeId,
+                    name:userName
+                }*/
+            });
+
+            //头工具栏事件
+            table.on('toolbar(test)', function(obj){
+                var checkStatus = table.checkStatus(obj.config.id);
+                switch(obj.event) {
+                    case 'getCheckData':
+                        var data = checkStatus.data;
+                        // layer.alert(JSON.stringify(data),"id");
+                        var one = table.checkStatus("demo");
+                        var two = one.data;
+                        if (two.length == 0) {
+                            layer.msg("请先选择一位用户！");
+                            return false;
+                        }
+                        var name;
+                        var identity;
+                        var address;
+                        var point;
+                        var gradeId;
+                        var id;
+                        var gradeName;
+                        var sex;
+                        var phone;
+                        var parentPhone;
+                        for (var i = 0; i < two.length; i++) {
+                            id = two[i].id;
+                            name = two[i].name;
+                            identity = two[i].identity;
+                            address = two[i].address;
+                            point = two[i].point;
+                            gradeId = two[i].gradeId;
+                            gradeName = two[i].grade.name;
+                            sex = two[i].sex;
+                            phone = two[i].phone;
+                            parentPhone = two[i].parentPhone;
+                        }
+
+                        var open = layer.open({
+                            type: 1,
+                            // time: 20000,
+                            skin: 'layui-layer-rim', //加上边框
+                            area: ['600px', '500px'], //宽高
+
+                            content: '<form class="layui-form form" style="margin-left: 100px" id="form">  <div class="layui-form-item">\n' +
+                                '    <div class="layui-input-inline" style="margin-left: 130px"><label class="layui-form-label">用户信息</label></div>\n' +
+                                //    个人编号
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">个人编号</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="id" id="id" value="' + id + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input" disabled>\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      姓名
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">姓名</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="name" id="name" value="' + name + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      身份证
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">身份证</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="identity" id="identity" value="' + identity + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      地址
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">地址</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="address" id="address" value="' + address + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      积分
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">积分</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="point" id="point" value="' + point + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input" disabled>\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      性别
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">性别</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="sex" id="sex" value="' + sex + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      联系电话
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">联系电话</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="phone" id="phone" value="' + phone + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      父母电话
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">父母电话</label>\n' +
+                                '    <div class="layui-input-block">\n' +
+                                '      <input type="text" name="parentPhone" id="parentPhone" value="' + parentPhone + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '    </div>\n' +
+                                '  </div>' +
+                                //      班级编号
+                                '  <div class="layui-form-item" style="margin-right: 150px">\n' +
+                                '    <label class="layui-form-label">班级编号</label>\n' +
+                                '    <div class="layui-input-block" style="display: block">\n' +
+                                '      <input type="text" name="gradeId" id="gradeId" value="' + gradeName + '" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">\n' +
+                                '<input type="text" style="display: none" id="isUpdate">' +
+                                '    </div>\n' +
+
+
+                                '<div class="layui-form-item" style="margin-right: 150px">\n' +
+                                //  '<div class="layui-inline">\n' +
+                                // '      <label class="layui-form-label">班级编号</label>\n' +
+                                // '      <div class="layui-input-inline">\n' +
+                                // '        <select name="gradeId" lay-verify="required" id="gradeId" lay-search="">\n' +
+                                // '          <option value="">直接选择或搜索选择</option>\n' +
+                                // '<#list gradeList as grade>'+
+                                // ' <option value="${grade.id}">${grade.name}</option>'+
+                                // '</#list>'+
+                                // '        </select>\n' +
+                                // '      </div>\n' +
+                                // ' </div>'+
+                                '<div>' +
+                                ' <div class="layui-input-inline" style="margin-left: 120px"><input type="button" value="修改" class="layui-btn layui-btn-primary" style="margin: 50px" id="submit"></div> </div>' +
+                                '</form>'
+                        });
+                        //班级名失去焦点
+                        $("#gradeId").blur(function () {
+                            var gradename = $(this).val();
+                            isHaveGradeName(gradename);
+
+                        });
+
+                        //判断班级名存在 函数
+                    function isHaveGradeName(gradename) {
+                        $.getJSON("/sys/grade/isHaveGradeName", "gradeName=" + gradename, function (data) {
+                            if (data != null) {
+                                if (data.toString() == "true") {   //班级名存在
+                                    // return true;
+                                } else {
+                                    alert("班级名不存在！");
+                                    $("#gradeId").val("");
+                                    // return false;
+                                }
+                            }
+                        });
+                    }
+
+                        //新增点击事件
+                        $("#submit").click(function () {
+                            var name = $("#name").val();
+                            var identity = $("#identity").val();
+                            var address = $("#address").val();
+                            var gradename = $("#gradeId").val();
+                            var point = $("#point").val();
+                            var sex = $("#sex").val();
+                            if (sex == "男") {
+                                sex = 1;
+                            } else if (sex == "女") {
+                                sex = 0;
+                            } else {
+                                layer.msg("性别错误");
+                                return false;
+                            }
+                            var phone = $("#phone").val();
+                            var parentPhone = $("#parentPhone").val();
+                            var gradeId = 0;
+                            //判断班级名是否存在
+                            $.ajax({
+                                type: "POST",
+                                url: "/sys/grade/isHaveGradeName2",
+                                data: "gradeName=" + gradename,
+                                //防止自动转换数据格式。
+                                dataType: "json",
+                                async: false,
+                                success: function (data) {
+                                    if (data != null) {
+                                        if (data.toString() == "false") {   //班级名不存在
+                                            $("#gradeId").val("");
+                                            $("#isUpdate").val("0");  //存在的话在 id为isUpdate的input标签中赋值0
+                                        } else {
+                                            gradeId = data.toString();
+                                            $("#isUpdate").val("1");  //不存在的话在 id为isUpdate的input标签中赋值1
+                                        }
+                                    }
+                                }
+                            });
+                            if (phone == "" || phone == null || phone.length != 11) {
+                                layer.msg("手机号格式错误！！");
+                                return false;
+                            } else if (parentPhone == "" || parentPhone == null || parentPhone.length != 11) {
+                                layer.msg("父母手机号格式错误！");
+                                return false;
+                            } else if (name == "" || name == null) {
+                                layer.msg("姓名不能为空！");
+                                return false;
+                            } else if (identity == "" || identity == null) {
+                                layer.msg("身份证号不能为空！");
+                                return false;
+                            } else if (gradename == "" || gradename == null) {
+                                layer.msg("班级名不能为空！");
+                                return false;
+                            } else if (identity.length < 18 || identity.length > 18) {
+                                layer.msg("身份证号格式不正确！");
+                                return false;
+                            } else if ($("#isUpdate").val() == "0") {
+                                return false;
+                            } else {
+                                // alert("触发修改");
+                                layer.close(open);
+                                $.getJSON("/sys/updateStudent", "name=" + name + "&identity=" + identity + "&address=" + address + "&gradeId=" + gradeId + "&id=" + id + "&sex=" + sex + "&phone=" + phone + "&parentPhone=" + parentPhone, function (data) {
+                                    if (data != null) {
+                                        if (data.toString() == "true") {
+                                            layer.alert("修改成功！！");
+                                            gradeId = 0;
+                                            layer.close(open);
+                                            //刷新页面
+                                            $("#content").load("/jump/user", function () {
+                                                layui.use('element', function () {
+                                                    var element = layui.element;
+                                                });
+                                            });
+
+                                        } else {
+                                            layer.alert("修改失败！！");
+                                        }
+
+                                    }
+                                })
+                            }
+                        });
+
+
+                        break;
+                    case
+                    'getCheckLength'
+                    :
+                        //删除
+                        var data = checkStatus.data;
+                        // layer.alert(JSON.stringify(data),"id");
+                        var one = table.checkStatus("demo");
+                        var two = one.data;
+                        if (two.length == 0) {
+                            layer.msg("请先选择一位用户！");
+                            return false;
+                        } else {
+                            var id;
+                            for (var i = 0; i < two.length; i++) {
+                                id = two[i].id;
+                            }
+                            layer.confirm('真的删除行么', function (index) {
+                                $.getJSON("/sys/del?id=" + id, function (data) {
+                                    if (data.toString() == "true") {
+                                        layer.msg("删除成功！！");
+                                        $("#content").load("/jump/user", function (data) {
+                                            if (eval('(' + data + ')').Code.toString() == "600") {
+                                                window.location = "/sys/toErrorLogin";
+                                                return;
+                                            }
+                                            layui.use('element', function () {
+                                                var element = layui.element;
+                                            });
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                        ;
+                };
+            });
+        });
+    }
+
+
+</script>
+</body>
+</html>

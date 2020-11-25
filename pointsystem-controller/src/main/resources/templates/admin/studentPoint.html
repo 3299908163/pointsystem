@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>班级奖惩页面</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <script src="/js/const/jquery-3.3.1.js"></script>
+    <script src="/layui/layui.all.js"></script>
+    <script src="/js/const/studentPoint.js"></script>
+</head>
+<body>
+<form class="layui-form" action="">
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生姓名</label>
+        <div class="layui-input-inline">
+            <input type="text" name="name" id="name" lay-verify="title" autocomplete="off" placeholder="请输入姓名" class="layui-input">
+        </div>
+        <div class="layui-input-inline">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1" id="search">立即搜索</button>
+        </div>
+    </div>
+
+</form>
+<table class="layui-hide" id="test" lay-filter="test"></table>
+
+<!--<script type="text/html" id="toolbarDemo">-->
+    <!--<div class="layui-btn-container" id="layerDemo" style="margin-bottom: 0;">-->
+        <!--<button class="layui-btn layui-btn-sm" lay-event="addGrade" id="addStudent">新增学生</button>-->
+    <!--</div>-->
+<!--</script>-->
+
+</body>
+</html>

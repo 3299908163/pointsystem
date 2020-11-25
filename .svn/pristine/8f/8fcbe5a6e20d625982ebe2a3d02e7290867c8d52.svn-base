@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        注册页面
+    </title>
+    <link rel="stylesheet" type="text/css" href="/css/const/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="/css/login.css" />
+</head>
+<script src="/js/const/vue.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/vue-resource.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/jquery-3.3.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/registerUser.js" type="text/javascript" charset="utf-8"></script>
+<body class="login-bg">
+<div id="app">
+    <div class="login">
+        <div class="message">北大青鸟管理员注册</div>
+        <div id="darkbannerwrap"></div>
+        <form>
+            <div class="form-group pt-3">
+                <input type="text" id="identity" placeholder="身份证号" v-model="identity" class="form-control " @blur="identityBlur($event)" @input="inputChange($event)" ref="identity" AUTOCOMPLETE="off">
+                <div class="invalid-feedback">{{identityMsg}}</div>
+            </div>
+            <div class="form-group pt-3">
+                <input type="text" id="name" placeholder="姓名" v-model="name" class="form-control" @blur="nameBlur($event)"
+                       ref="name" @input="inputChange($event)" AUTOCOMPLETE="off">
+                <div class="invalid-feedback">{{nameMsg}}</div>
+            </div>
+            <div class="form-group pt-3">
+                <input type="text" id="address" placeholder="地址可以不填" v-model="address" class="form-control">
+            </div>
+            <button type="button" class="btn btn-success form-control mt-5" @click="registerUser">注册</button>
+        </form>
+    </div>
+    <!-- 弹出层 -->
+    <div class="pop-up">
+        <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
+        <p>{{popMessage}}</p>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+
+</script>
+</html>

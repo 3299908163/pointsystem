@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品信息修改页面</title>
+</head>
+<body>
+    <form action="/prize/updatePrize" method="get" enctype="multipart/form-data">
+        <table border="1px red solid">
+            <tr>
+                <th>商品名</th>
+                <th>商品积分</th>
+                <th>商品数量</th>
+                <th>商品路径</th>
+            </tr>
+            <tr>
+                <th><input type="text" value="${prize.name}"></th>
+                <th><input type="text" value="${prize.point}"></th>
+                <th><input type="text" value="${prize.number}"></th>
+                <th><input type="file" ></th>
+                <th><img src="image/a.jpg"></th>
+            </tr>
+        </table>
+        <input type="submit" value="修改">
+    </form>
+</body>
+</html>

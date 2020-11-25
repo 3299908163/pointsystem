@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bdqn.pointsystem.dao.UserMapper">
+    <resultMap id="userResult" type="cn.bdqn.pointsystem.emtitys.User">
+            <id property="id" column="id"/>
+            <result column="name" property="name"/>
+            <result column="identity" property="identity"/>
+            <result column="address" property="address"/>
+            <result column="point" property="point"/>
+            <result column="is_admin" property="isAdmin"/>
+            <result column="grade_id" property="gradeId"/>
+            <result column="session_id" property="sessionId"/>
+            <result column="phone" property="phone"/>
+            <result column="parent_phone" property="parentPhone"/>
+            <result column="sex" property="sex"/>
+        <association property="grade" javaType="cn.bdqn.pointsystem.emtitys.Grade">
+            <id property="id" column="id"/>
+            <result property="name" column="gradeName"/>
+        </association>
+    </resultMap>
+    <select id="Listuser" resultType="cn.bdqn.pointsystem.emtitys.User">
+        select * from user
+    </select>
+
+    <update id="updateUserPoint">
+        update user set point=point-#{point} where id=#{id}
+    </update>
+    <select id="selectPageUser" resultMap="userResult">
+        select u.*,g.id,g.name as gradeName from user u
+        LEFT  JOIN grade g on u.grade_id=g.id
+        <where>
+            <if test="name!=null and ''!= name">
+                and u.name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="gradeId !=null and gradeId>0">
+                and grade_id=#{gradeId}
+            </if>
+            and is_admin=0
+        </where>
+        ORDER BY u.id  DESC
+    </select>
+
+
+    <select id="getCount" resultType="int">
+         SELECT COUNT(1) FROM user u
+        LEFT  JOIN grade g on u.grade_id=g.id
+        <where>
+            <if test="name!=null and ''!= name">
+                and u.name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="gradeId !=null and gradeId>0">
+                and grade_id=#{gradeId}
+            </if>
+            and is_admin=0
+        </where>
+    </select>
+
+    <insert id="insertUser" parameterType="cn.bdqn.pointsystem.emtitys.User">
+        INSERT INTO USER(`name`,`identity`,address,is_admin,grade_id,phone,parent_phone,sex)
+        VALUES(#{name},#{identity},#{address},#{isAdmin},#{gradeId},#{phone},#{parentPhone},#{sex})
+    </insert>
+
+    <select id="findUsersByGradeId" resultType="cn.bdqn.pointsystem.emtitys.User">
+        SELECT * FROM USER WHERE grade_id=#{gradeId}
+    </select>
+
+    <select id="selectUserById" resultType="cn.bdqn.pointsystem.emtitys.User">
+        SELECT * FROM USER WHERE id=#{id}
+    </select>
+
+    <update id="updateUser" parameterType="cn.bdqn.pointsystem.emtitys.User">
+        UPDATE user SET name=#{name},identity=#{identity},address=#{address},grade_id=#{gradeId},sex=#{sex},phone=#{phone},parent_phone=#{parentPhone} WHERE id=#{id}
+    </update>
+
+    <select id="getSessionIdById" parameterType="int" resultType="string">
+        select session_id from user where id=#{id}
+    </select>
+
+    <delete id="delUser" parameterType="int">
+        delete from user where id=#{id}
+    </delete>
+</mapper>

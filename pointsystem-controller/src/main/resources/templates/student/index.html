@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>学生首页</title>
+    <link rel="stylesheet" type="text/css" href="/css/const/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="/css/studentIndex.css" />
+</head>
+<script src="/js/const/vue.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/vue-resource.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/jquery-3.3.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/popper.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/const/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/studentIndex.js" type="text/javascript" charset="utf-8"></script>
+
+<body>
+<div id="app">
+    <div class="top-student text-right mb-3">
+        当前登陆用户为：
+        <span>${currentUser.name}</span> <a href="javascript:;" @click="cancellationClick">注销</a>
+    </div>
+    <div class="logo">
+        <img src="/images/logo.png" alt="">
+        <h2 class="text-center">
+            运城北大青鸟学分系统
+        </h2>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!--学生部分-->
+            <div class="col-md-8 student">
+                <div class="stuButtons">
+                    当前积分为：<span>${currentUser.point}</span>
+                    <input type="hidden" value="${currentUser.point}" ref="userPoint">
+                    <a href="javascript:;" @click="getIntegralRecordList">查看积分详情</a>
+                    <a href="javascript:;" @click="getPrizeListAndUsablePoint"> 兑换奖品</a>
+                    <a href="javascript:;" @click="getPrizeRedeemedList">查看已兑换奖品</a>
+                </div>
+
+                <!--积分详情模块-->
+                <div id="integralRecordModule" v-show="integralRecordShow">
+                    <!-- 当前显示积分总计 -->
+                    <h4 class="title">积分加减详情 <span>总计：{{sumPoint}}</span></h4>
+                    <!-- 积分详情表格 -->
+                    <table class="table text-center">
+                        <thead class="thead-light">
+                        <tr>
+                            <th scope="col">详情</th>
+                            <th scope="col">积分</th>
+                            <th scope="col">加/减</th>
+                            <th scope="col">日期</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="record in integralRecordList" :key="record.id" v-show="record.isAdd != recordExShow">
+                            <td v-cause="record.causeId"></td>
+                            <td>{{record.point}}</td>
+                            <td>{{record.isAdd == '0' ? "减":"加"}}</td>
+                            <td>{{record.creationTime | dateFormat(0)}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="message">{{integralRecordMsg}}</div>
+                    <!-- 积分详情筛选项 -->
+                    <div class="dropdown">
+                        <a class="btn btn-secondary dropdown-toggle mb-3 float-right" href="#" id="filter_items" data-toggle="dropdown">
+                            筛选项
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="filter_items">
+                            <a class="dropdown-item" href="javascript:;" @click="getListAndSumPoint(-1)">全部</a>
+                            <a class="dropdown-item" href="javascript:;" @click="getListAndSumPoint(0)">加分项</a>
+                            <a class="dropdown-item" href="javascript:;" @click="getListAndSumPoint(1)">减分项</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!--兑换礼物模块-->
+                <div id="prizeModule" v-show="prizeShow">
+                    <!-- 当前可兑换积分 -->
+                    <h4 class="title">奖品兑换 <span>当前可兑换积分为：{{usablePoint}}</span></h4>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xl-6" v-for="prize in prizeList" :key="prize.id">
+                                <div class="card mb-3">
+                                    <div class="row no-gutters">
+                                        <div class="col-4">
+                                            <img :src="prize.imgUrl" class="card-img">
+                                        </div>
+                                        <div class="col-8">
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{prize.name}}</h5>
+                                                <p class="card-text">兑换所需积分：{{prize.point}}</p>
+                                                <p class="card-text">剩余数量：{{prize.number}}</p>
+                                                <button type="button" class="btn btn-success" v-disabled="prize.number" @click="exchange(prize.id, prize.point)">立即兑换</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message">{{prizeMsg}}</div>
+                </div>
+
+                <!--已兑换奖品模块-->
+                <div id="prizeRedeemedModule" v-show="prizeRedeemedShow">
+                    <h4 class="title">已兑换奖品列表详情</h4>
+                    <!-- 已兑换奖品列表表格 -->
+                    <table class="table text-center">
+                        <thead class="thead-light">
+                        <tr>
+                            <th scope="col">奖品名</th>
+                            <th scope="col">兑换时间</th>
+                            <th scope="col">是否领取</th>
+                            <th scope="col">奖品码</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="redeemed in prizeRedeemedList" :key="redeemed.id">
+                            <td v-prize="redeemed.prizeId">{{redeemed.prizeId}}</td>
+                            <td>{{redeemed.creationTime | dateFormat(1)}}</td>
+                            <td>{{redeemed.isReceive == '0' ? '未领取' : '已领取'}}</td>
+                            <td>{{redeemed.qrCode}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="message">{{prizeRedeemedMsg}}</div>
+                </div>
+            </div>
+
+            <!-- 班级部分-->
+            <div class="col-md-4 grade">
+                <p class="text-right">本班当前积分为：<span v-cloak>{{gradePoint}}</span></p>
+                <div class="text-center">
+                    <h4 class="title">班级积分排行榜TOP3</h4>
+                    <table class="table">
+                        <thead class="thead-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">班级</th>
+                            <th scope="col">积分</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(grade,i) in gradeList.slice(0,3)" :key="grade.id">
+                            <th scope="row">{{i+1}}</th>
+                            <td>{{grade.name}}</td>
+                            <td>{{grade.point}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- 弹出层 -->
+        <div class="pop-up">
+            <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
+            <p>{{popMessage}}</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

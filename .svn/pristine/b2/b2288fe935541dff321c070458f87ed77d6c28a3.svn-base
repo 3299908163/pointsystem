@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>班级奖惩页面</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <script src="/js/const/jquery-3.3.1.js"></script>
+    <script src="/layui/layui.all.js"></script>
+    <!--<script src="/js/const/homePage.js"></script>-->
+    <script src="/js/const/gradePoint.js"></script>
+</head>
+<body>
+
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+    <script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container" id="layerDemo" style="margin-bottom: 0;">
+    <button class="layui-btn layui-btn-sm" lay-event="addGrade" id="addGrade">新增班级</button>
+        <button class="layui-btn layui-btn-sm" data-type="getCheckLength">删除信息（点击复选框进行删除）</button>
+    </div>
+    </script>
+
+<script>
+    layui.use(['form','table','layer'],function () {
+        var table = layui.table
+            , form = layui.form
+            , layer = layui.layer
+            , $ = layui.jquery;
+        table.render({
+            elem: '#test'
+            , height: 'full'
+            , url: '/sys/page/grades' //数据接口
+            , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            , defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                title: '提示'
+                , layEvent: 'LAYTABLE_TIPS'
+                , icon: 'layui-icon-tips'
+            }]
+            , title: '用户数据表'
+            , page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: ['limit', 'count', 'prev', 'page', 'next', 'skip'] //自定义分页布局
+                //,curr: 5 //设定初始在第 5 页
+                , limit: 10 //一页显示多少条
+                , limits: [5, 10, 15]//每页条数的选择项
+                , groups: 2 //只显示 2 个连续页码
+                , first: "首页" //不显示首页
+                , last: "尾页" //不显示尾页
+
+            }
+            , cols: [[ //表头
+                {type: 'checkbox', fixed: 'left'}
+                , {field: 'id', title: 'ID', sort: true, fixed: 'left'}
+                , {field: 'name', title: '班级名'}
+                , {field: 'point', title: '积分', sort: true}
+            ]]
+        });
+
+        //点击新增按钮
+        $("#addGrade").click(function () {
+            var open=layer.open({
+                type: 1,
+                skin: 'layui-layer-rim', //加上边框
+                area: ['350px', '250px'], //宽高
+
+                content: '<form class="layui-form form" style="margin-left: 100px" id="form">  <div class="layui-form-item">\n' +
+                    '    <label class="layui-form-label">班级名</label>\n' +
+                    '    <div class="layui-input-inline">\n' +
+                    '      <input type="text" name="name" id="name"  placeholder="请输入班级名" required lay-verify="required"  class="layui-input">\n' +
+                        '<input type="text" style="display: none" id="isAdd">'+
+                    '    </div>\n' +
+                    ' <div class="layui-input-inline"><input type="button" value="新增" class="layui-btn layui-btn-primary" style="margin: 50px" id="submit"></div> </div>' +
+                    '</form>'
+            });
+
+            //班级名失去焦点 判断班级名是否存在
+            $("#name").blur(function () {
+                var gradename=$(this).val();
+                $.getJSON("/sys/grade/isHaveGradeName","gradeName="+gradename,function (data) {
+                    if(eval('(' + data + ')').Code.toString()=="600"){
+                        window.location = "/sys/toErrorLogin"
+                        return;
+                    }
+
+                    if(data!=null){
+                        if(data.toString()=="true"){   //班级名存在
+                            layer.msg("班级名已存在！");
+                            $("#name").val("");
+                            $("#isAdd").val("0");   //
+                        }else{
+                            $("#isAdd").val("1");
+                        }
+                    }
+                })
+            });
+            //新增班级点击事件
+            $("#submit").click(function () {
+                var name=$("#name").val();
+
+                $.getJSON("/sys/grade/isHaveGradeName","gradeName="+name,function (data) {
+                    // if(eval('(' + data + ')').Code.toString()=="600"){
+                    //     window.location = "/sys/toErrorLogin";
+                    //     return;
+                    // }
+                    if(data!=null){
+                        if(data.toString()=="true"){   //班级名存在
+                            layer.msg("班级名已存在！");
+                            $("#name").val("");
+                            $("#isAdd").val("0");   //
+                            return false;
+                        }else{
+                            $("#isAdd").val("1");
+                            if(name==""||name==null){
+                                layer.msg("班级名不能为空！");
+                                return false;
+                            }else if($("#isAdd").val()=="0"){
+                                return false;
+                            }else{
+                                $.getJSON("/sys/grade/addGrade","name="+name,function (data) {
+                                    // if(eval('(' + data + ')').Code.toString()=="600"){
+                                    //     window.location = "/sys/toErrorLogin"
+                                    //     return;
+                                    // }
+                                    if(data!=null){
+                                        if(data.toString()=="true"){
+                                            layer.alert("添加成功");
+                                            layer.close(open);
+                                            $("#content").load("/sys/grade/gradePoint", function (data) {
+                                                if(eval('(' + data + ')').Code.toString()=="600"){
+                                                    window.location = "/sys/toErrorLogin"
+                                                    return;
+                                                }
+                                                layui.use('element', function () {
+                                                    var element = layui.element;
+                                                });
+                                            });
+                                        }else{
+                                            layer.alert("添加失败");
+                                        }
+
+                                    }
+                                })
+                            }
+                        }
+                    }
+                });
+
+
+
+            });
+        });
+
+        //删除班级
+        active = {
+            getCheckLength: function () { //获取选中数目
+                var checkStatus = table.checkStatus('test')
+                    , data = checkStatus.data;
+                var list = new Array();
+                for (var i = 0; i < data.length; i++) {
+                    list[i] = data[i].id
+                }
+                if (list.length == 0) {
+                    layer.msg("您没有选择任何信息！");
+                } else {
+                    layer.confirm('真的删除行么', function (index) {
+                        $.getJSON("/sys/grade/del?list=" + list, function (data) {
+                            if (data.toString() == "true") {
+                                layer.msg("删除成功！！");
+                                $("#content").load("/sys/grade/gradePoint", function (data) {
+                                    if (eval('(' + data + ')').Code.toString() == "600") {
+                                        window.location = "/sys/toErrorLogin";
+                                        return;
+                                    }
+                                    layui.use('element', function () {
+                                        var element = layui.element;
+                                    });
+                                });
+                            }
+                        });
+                    });
+                }
+            }
+        };
+            $('#layerDemo .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+
+</body>
+</html>
